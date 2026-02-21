@@ -2,17 +2,30 @@ import java.util.ArrayList;
 
 public class Engine {
 
-    public static boolean forward(Rule[] bdr, ArrayList<String> bdp, String goal) {
+    public static ArrayList<String> forward(Rule[] bdr, ArrayList<String> bdp, String goal) {
 
+        ArrayList<String> log = new ArrayList<>();
         boolean newFact = true;
+        int tour = 1;
+
+        // réinitialiser les règles
+        for (Rule r : bdr) r.used = false;
+
+        log.add("════════════════════════════════════════");
+        log.add("  CHAÎNAGE AVANT");
+        log.add("════════════════════════════════════════");
+        log.add("  Faits initiaux : " + bdp);
+        log.add("  Objectif       : " + goal);
+        log.add("────────────────────────────────────────");
 
         while (newFact) {
             newFact = false;
+            log.add("");
+            log.add("🔄 Tour " + tour + " :");
 
             for (int i = 0; i < bdr.length; i++) {
                 if (!bdr[i].used) {
 
-                    // vérifier toutes les conditions
                     boolean ok = true;
                     for (String cond : bdr[i].p) {
                         if (!bdp.contains(cond)) {
@@ -21,28 +34,37 @@ public class Engine {
                         }
                     }
 
-                    // si toutes les conditions sont vraies
                     if (ok) {
                         bdr[i].used = true;
+                        log.add("  ✅ R" + bdr[i].name + " : " + bdr[i].p + " → " + bdr[i].c);
 
                         for (String concl : bdr[i].c) {
                             if (!bdp.contains(concl)) {
                                 bdp.add(concl);
                                 newFact = true;
-                                System.out.println("R" + bdr[i].name + " -> nouveau fait : " + concl);
+                                log.add("     ➕ Nouveau fait : " + concl);
                             }
                         }
 
                         if (bdp.contains(goal)) {
-                            System.out.println("Objectif " + goal + " atteint !");
-                            return true;
+                            log.add("");
+                            log.add("────────────────────────────────────────");
+                            log.add("🎯 OBJECTIF \"" + goal + "\" ATTEINT !");
+                            log.add("  Faits finaux : " + bdp);
+                            log.add("════════════════════════════════════════");
+                            return log;
                         }
                     }
                 }
             }
+            tour++;
         }
 
-        System.out.println("Objectif " + goal + " non atteint");
-        return false;
+        log.add("");
+        log.add("────────────────────────────────────────");
+        log.add("❌ OBJECTIF \"" + goal + "\" NON ATTEINT");
+        log.add("  Faits finaux : " + bdp);
+        log.add("════════════════════════════════════════");
+        return log;
     }
 }
